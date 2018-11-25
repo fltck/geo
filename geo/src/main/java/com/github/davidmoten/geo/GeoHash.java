@@ -350,11 +350,6 @@ public final class GeoHash {
     // (c) 2008 David Troy
     // Distributed under the MIT License
     public static String encodeHash(double latitude, double longitude, int length) {
-        Preconditions.checkArgument(length > 0 && length <=12, "length must be between 1 and 12");
-        Preconditions.checkArgument(latitude >= -90 && latitude <= 90,
-                "latitude must be between -90 and 90 inclusive");
-        longitude = Position.to180(longitude);
-
         return fromLongToString(encodeHashToLong(latitude, longitude, length));
     }
 
@@ -377,8 +372,65 @@ public final class GeoHash {
         }
         return new String(geohash);
     }
+    
+    /**
+     * Returns a long representation geohash of length {@link GeoHash#MAX_HASH_LENGTH} (12) for the
+     * given WGS84 point (latitude,longitude).
+     * 
+     * @param latitude
+     *            in decimal degrees (WGS84)
+     * @param longitude
+     *            in decimal degrees (WGS84)
+     * @return hash at given point of default length
+     */
+    public static long encodeHashToLong(double latitude, double longitude) {
+        return encodeHashToLong(latitude, longitude, MAX_HASH_LENGTH);
+    }
 
-    static long encodeHashToLong(double latitude, double longitude, int length) {
+    /**
+     * Returns a long representation geohash of given length for the given WGS84 point.
+     * 
+     * @param p
+     *            point
+     * @param length
+     *            length of hash
+     * @return hash at point of given length
+     */
+    public static long encodeHashToLong(LatLong p, int length) {
+        return encodeHashToLong(p.getLat(), p.getLon(), length);    	
+    }
+
+    /**
+     * Returns a long representation geohash of of length {@link GeoHash#MAX_HASH_LENGTH} (12) for
+     * the given WGS84 point.
+     * 
+     * @param p
+     *            point
+     * @return hash of default length
+     */
+    public static long encodeHashToLong(LatLong p) {
+        return encodeHashToLong(p.getLat(), p.getLon(), MAX_HASH_LENGTH);    	
+    }
+
+    /**
+     * Returns a long representation geohash of given length for the given WGS84 point
+     * (latitude,longitude). If latitude is not between -90 and 90 throws an
+     * {@link IllegalArgumentException}.
+     * 
+     * @param latitude
+     *            in decimal degrees (WGS84)
+     * @param longitude
+     *            in decimal degrees (WGS84)
+     * @param length
+     *            length of desired hash
+     * @return geohash of given length for the given point
+     */
+    public static long encodeHashToLong(double latitude, double longitude, int length) {
+        Preconditions.checkArgument(length > 0 && length <=12, "length must be between 1 and 12");
+        Preconditions.checkArgument(latitude >= -90 && latitude <= 90,
+                "latitude must be between -90 and 90 inclusive");
+        longitude = Position.to180(longitude);
+
         boolean isEven = true;
         double minLat = -90.0, maxLat = 90;
         double minLon = -180.0, maxLon = 180.0;
